@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import axios from 'axios';
 
+
 // Validation error messages
 const validationErrors = {
   fullNameTooShort: 'full name must be at least 3 characters',
@@ -56,18 +57,17 @@ export default function Form() {
     schema.isValid(values).then(setFormEnabled);
   }, [values]);
 
-  // Handle input changes
   const onChange = (evt) => {
     const { type, name, value, checked } = evt.target;
-
+  
     if (type === 'checkbox') {
       // Handle toppings checkbox input
       const newToppings = checked
         ? [...values.toppings, name] // Add topping
         : values.toppings.filter((topping_id) => topping_id !== name); // Remove topping
-
+  
       setValues({ ...values, toppings: newToppings });
-
+  
       // Validate toppings array
       Yup.reach(schema, 'toppings')
         .validate(newToppings)
@@ -76,18 +76,21 @@ export default function Form() {
           setErrors((prev) => ({ ...prev, toppings: err.errors[0] }))
         );
     } else {
-      // Handle text and select inputs
-      setValues({ ...values, [name]: value });
-
+      // Trim the value for `fullName`
+      const trimmedValue = name === 'fullName' ? value.trim() : value;
+  
+      setValues({ ...values, [name]: trimmedValue });
+  
       // Validate the specific field
       Yup.reach(schema, name)
-        .validate(value)
+        .validate(trimmedValue)
         .then(() => setErrors((prev) => ({ ...prev, [name]: '' })))
         .catch((err) =>
           setErrors((prev) => ({ ...prev, [name]: err.errors[0] }))
         );
     }
   };
+  
 
   // Handle form submission
   const onSubmit = (evt) => {
